@@ -1,7 +1,7 @@
 class Api::V1::PlayersController < Api::V1::BaseController
   def create
     player = Player.create!(player_params)
-    render json: PlayerBlueprint.render(player), status: :created
+    render json: Api::V1::PlayerBlueprint.render(player, view: :create), status: :created
   end
 
   private

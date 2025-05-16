@@ -52,9 +52,7 @@ Creates a new player with a given name.
 ```json
     {
         "id": "f3248d3a-14ad-4758-a781-f8ebcec95363",
-        "name": "Jaskier",
-        "created_at": "2025-05-12T10:00:00Z",
-        "updated_at": "2025-05-12T10:00:00Z"
+        "name": "Jaskier"
     }
 ```
 
