@@ -2,13 +2,13 @@ class Api::V1::PlaythroughsController < Api::V1::BaseController
   def create
     player = Player.find(params[:player_id])
     playthrough = player.playthroughs.create!(playthrough_params)
-    render json: playthrough, status: :created
+    render json: PlaythroughBlueprint.render(playthrough), status: :created
   end
 
   def index
     player = Player.find(params[:player_id])
     playthroughs = player.playthroughs.order(started_at: :desc)
-    render json: playthroughs
+    render json: PlaythroughBlueprint.render(playthroughs)
   end
 
   private
