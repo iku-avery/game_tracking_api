@@ -16,8 +16,7 @@ module Api
       private
 
       def playthrough_params
-        params.require(:playthrough).permit(:started_at, :finished_at, :score,
-                                            :time_spent)
+        params.require(:playthrough).permit(:started_at, :score, :time_spent)
       end
     end
   end

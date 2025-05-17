@@ -68,7 +68,6 @@ Creates a new playthrough associated with a specific player.
     {
         "playthrough": {
             "started_at": "2025-05-12T10:00:00Z",
-            "finished_at": "2025-05-12T11:00:00Z",
             "score": 1250.75,
             "time_spent": 3600.0
         }
@@ -83,7 +82,6 @@ Creates a new playthrough associated with a specific player.
         -d '{
             "playthrough": {
             "started_at": "2025-05-12T10:00:00Z",
-            "finished_at": "2025-05-12T11:00:00Z",
             "score": 1250.75,
             "time_spent": 3600.0
             }
@@ -97,7 +95,6 @@ Creates a new playthrough associated with a specific player.
         "id": "a1234567-b89c-012d-345e-67890fghijkl",
         "player_id": "f3248d3a-14ad-4758-a781-f8ebcec95363",
         "started_at": "2025-05-12T10:00:00Z",
-        "finished_at": "2025-05-12T11:00:00Z",
         "score": 1250.75,
         "time_spent": 3600.0,
         "created_at": "2025-05-12T11:00:05Z",
@@ -125,7 +122,6 @@ Retrieves all playthroughs for a given player.
             "id": "a1234567-b89c-012d-345e-67890fghijkl",
             "player_id": "f3248d3a-14ad-4758-a781-f8ebcec95363",
             "started_at": "2025-05-12T10:00:00Z",
-            "finished_at": "2025-05-12T11:00:00Z",
             "score": 1250.75,
             "time_spent": 3600.0,
             "created_at": "2025-05-12T11:00:05Z",

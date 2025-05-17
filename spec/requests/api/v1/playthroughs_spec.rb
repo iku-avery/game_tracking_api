@@ -9,7 +9,6 @@ RSpec.describe "Api::V1::Playthroughs", type: :request do
         {
           playthrough: {
             started_at: "2025-05-12T10:00:00Z",
-            finished_at: "2025-05-12T11:00:00Z",
             score: 1500.5,
             time_spent: 3600.0
           }
