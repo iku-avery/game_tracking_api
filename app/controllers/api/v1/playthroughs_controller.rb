@@ -1,19 +1,24 @@
-class Api::V1::PlaythroughsController < Api::V1::BaseController
-  def create
-    player = Player.find(params[:player_id])
-    playthrough = player.playthroughs.create!(playthrough_params)
-    render json: Api::V1::PlaythroughBlueprint.render(playthrough), status: :created
-  end
+module Api
+  module V1
+    class PlaythroughsController < Api::V1::BaseController
+      def index
+        player = Player.find(params[:player_id])
+        playthroughs = player.playthroughs.order(started_at: :desc)
+        render json: Api::V1::PlaythroughBlueprint.render(playthroughs)
+      end
 
-  def index
-    player = Player.find(params[:player_id])
-    playthroughs = player.playthroughs.order(started_at: :desc)
-    render json: Api::V1::PlaythroughBlueprint.render(playthroughs)
-  end
+      def create
+        player = Player.find(params[:player_id])
+        playthrough = player.playthroughs.create!(playthrough_params)
+        render json: Api::V1::PlaythroughBlueprint.render(playthrough), status: :created
+      end
 
-  private
+      private
 
-  def playthrough_params
-    params.require(:playthrough).permit(:player_id, :started_at, :finished_at, :score, :time_spent)
+      def playthrough_params
+        params.expect(playthrough: %i[player_id started_at finished_at score
+                                      time_spent])
+      end
+    end
   end
 end

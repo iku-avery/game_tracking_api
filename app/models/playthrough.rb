@@ -12,8 +12,9 @@ class Playthrough < ApplicationRecord
 
   def finished_at_after_started_at
     return if finished_at.blank? || started_at.blank?
-    if finished_at < started_at
-      errors.add(:finished_at, "must be after the start time")
-    end
+
+    return unless finished_at < started_at
+
+    errors.add(:finished_at, "must be after the start time")
   end
 end
