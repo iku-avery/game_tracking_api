@@ -17,15 +17,15 @@ RSpec.describe "Api::V1::Playthroughs", type: :request do
       end
 
       it "creates a new playthrough" do
-        expect {
+        expect do
           post "/api/v1/players/#{player.id}/playthroughs", params: valid_params
-        }.to change(Playthrough, :count).by(1)
+        end.to change(Playthrough, :count).by(1)
       end
 
       it "returns status 201 and correct data" do
         post "/api/v1/players/#{player.id}/playthroughs", params: valid_params
         expect(response).to have_http_status(:created)
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json["score"].to_f).to eq(1500.5)
       end
     end
@@ -34,7 +34,7 @@ RSpec.describe "Api::V1::Playthroughs", type: :request do
       it "returns 422 if required fields are missing" do
         post "/api/v1/players/#{player.id}/playthroughs", params: { playthrough: { score: nil } }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(JSON.parse(response.body)).to include("errors")
+        expect(response.parsed_body).to include("errors")
       end
     end
   end
@@ -47,7 +47,7 @@ RSpec.describe "Api::V1::Playthroughs", type: :request do
     it "returns all playthroughs for a player" do
       get "/api/v1/players/#{player.id}/playthroughs"
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body).size).to eq(3)
+      expect(response.parsed_body.size).to eq(3)
     end
   end
 end

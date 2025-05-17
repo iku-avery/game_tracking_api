@@ -9,8 +9,8 @@ Rails.application.routes.draw do
   # root "posts#index"
   namespace :api do
     namespace :v1 do
-      resources :players, only: [ :create ] do
-        resources :playthroughs, only: [ :index, :create ]
+      resources :players, only: [:create] do
+        resources :playthroughs, only: %i[index create]
       end
     end
   end

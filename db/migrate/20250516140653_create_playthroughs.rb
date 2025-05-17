@@ -10,7 +10,7 @@ class CreatePlaythroughs < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :playthroughs, [ :player_id, :started_at ]
-    add_index :playthroughs, [ :player_id, :score ]
+    add_index :playthroughs, %i[player_id started_at]
+    add_index :playthroughs, %i[player_id score]
   end
 end
