@@ -16,8 +16,8 @@ module Api
       private
 
       def playthrough_params
-        params.expect(playthrough: %i[player_id started_at finished_at score
-                                      time_spent])
+        params.require(:playthrough).permit(:started_at, :finished_at, :score,
+                                            :time_spent)
       end
     end
   end

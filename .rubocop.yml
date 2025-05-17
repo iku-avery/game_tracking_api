@@ -45,3 +45,6 @@ RSpec/SpecFilePathSuffix:
 
 RSpec/MultipleExpectations:
   Enabled: false
+
+Rails/StrongParametersExpect:
+  Enabled: false
