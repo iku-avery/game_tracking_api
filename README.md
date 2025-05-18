@@ -179,6 +179,31 @@ Weekly Summary with `date`, sort by `total_score` or `total_duration`
     }
 ```
 
+### Get Impact Report
+
+**GET** `/api/v1/impact_report`
+
+Returns a list of all players with their impact score — defined as the difference between the first recorded score and the best recorded score in their history, sorted in descending order by highest impact.
+
+**Example CURL:**
+
+```bash
+    curl http://localhost:3000/api/v1/impact_report
+```
+
+**Response:**
+
+```json
+    [
+    {
+        "player_id": "04cd7c11-1adf-4928-a08e-3f3165fb2e03",
+        "player_name": "Consistent Improver",
+        "first_score": 100.0,
+        "best_score": 300.0,
+        "impact": 200.0
+    }]
+```
+
 ## Testing
 
 Run tests with:
