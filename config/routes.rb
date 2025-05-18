@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get 'weekly_summary', to: 'weekly_summary#index'
+      get 'impact_report', to: 'impact_report#index'
     end
   end
 end
