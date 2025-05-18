@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_17_154407) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_18_112310) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,6 +31,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_17_154407) do
     t.index ["player_id", "score"], name: "index_playthroughs_on_player_id_and_score"
     t.index ["player_id", "started_at"], name: "index_playthroughs_on_player_id_and_started_at"
     t.index ["player_id"], name: "index_playthroughs_on_player_id"
+    t.index ["started_at", "player_id"], name: "index_playthroughs_on_started_at_and_player_id"
   end
 
   add_foreign_key "playthroughs", "players"
