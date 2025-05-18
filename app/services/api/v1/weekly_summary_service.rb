@@ -1,6 +1,5 @@
 module Api
   module V1
-    require 'benchmark'
     class WeeklySummaryService
       def self.call(date = nil)
         date = normalize_date(date)
