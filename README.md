@@ -130,6 +130,55 @@ Retrieves all playthroughs for a given player.
     ]
 ```
 
+### Weekly Summary
+
+Retrieve a summary of players’ weekly playthrough statistics, with optional date filtering and sorting.
+
+**GET** `/api/v1/weekly_summary`
+
+Returns a summary of players’ playthroughs for a specified week or the current week by default.
+
+#### Request Parameters
+
+| Parameter   | Type   | Description                                                 | Default       |
+| ----------- | ------ | ----------------------------------------------------------- | ------------- |
+| `date`      | string | The date to fetch the week containing this date (ISO 8601). | Current date  |
+| `sort_by`   | string | Field to sort by: `total_score` or `total_duration`.        | `total_score` |
+| `direction` | string | Sort direction: `asc` or `desc`.                            | `desc`        |
+
+Weekly Summary with `date`, sort by `total_score` or `total_duration`
+
+**GET** `api/v1/weekly_summary?date={date}&sort_by={field}&direction={direction}`
+
+**Example CURL:**
+
+```bash
+    curl "http://localhost:3000/api/v1/weekly_summary?date=2025-05-12&sort_by=total_duration&direction=asc"
+```
+
+**Response:**
+
+```json
+    {
+    "week_start_date": "2025-05-12",
+    "week_end_date": "2025-05-18",
+    "player_summaries": [
+        {
+        "player_id": "8c561c6a-6304-4952-9492-2ae6759ac0f5",
+        "player_name": "Yennefer)",
+        "total_score": 400.0,
+        "total_duration": 3400.0
+        },
+        {
+        "player_id": "2fd17a3d-ce8f-40e7-8730-1128f55b79ef",
+        "player_name": "Ciri",
+        "total_score": 500.0,
+        "total_duration": 5000.0
+        }
+    ]
+    }
+```
+
 ## Testing
 
 Run tests with:
