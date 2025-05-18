@@ -1,12 +1,20 @@
 module Api
   module V1
     class WeeklySummaryService
+      ALLOWED_SORT_COLUMNS = %w[total_score total_duration].freeze
+      ALLOWED_DIRECTIONS = %w[asc desc].freeze
+
       def self.call(date: nil, sort_by: 'total_score', direction: 'desc')
         date = normalize_date(date)
-        playthroughs = fetch_playthroughs_for_the_week(date)
-        player_summaries = calculate_player_summaries(playthroughs, sort_by, direction)
+        sort_by = 'total_score' unless ALLOWED_SORT_COLUMNS.include?(sort_by)
+        direction = 'desc' unless ALLOWED_DIRECTIONS.include?(direction)
 
-        summarize(date, date.end_of_week, player_summaries)
+        player_summaries = fetch_and_aggregate_playthroughs(date, sort_by, direction)
+
+        week_start = date.beginning_of_week(:monday)
+        week_end = week_start + 6.days
+
+        summarize(week_start, week_end, player_summaries)
       end
 
       class << self
@@ -14,36 +22,33 @@ module Api
 
         def normalize_date(date)
           date ||= Date.current
-          date.beginning_of_week(:monday)
+          date.is_a?(Date) ? date : Date.parse(date.to_s)
         end
 
-        def fetch_playthroughs_for_the_week(date)
-          Playthrough.where(started_at: date.beginning_of_day..date.end_of_week.end_of_day)
-        end
+        def fetch_and_aggregate_playthroughs(date, sort_by, direction) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+          week_start = date.beginning_of_week(:monday).beginning_of_day
+          week_end = (week_start.to_date + 6.days).end_of_day
 
-        def calculate_player_summaries(playthroughs, sort_by, direction) # rubocop:disable Metrics/MethodLength
-          summaries = playthroughs
-                      .joins(:player)
-                      .group('players.id', 'players.name')
-                      .select(
-                        'players.id as player_id',
-                        'players.name as player_name',
-                        'SUM(playthroughs.score) as total_score',
-                        'SUM(playthroughs.time_spent) as total_duration'
-                      )
-                      .map do |result|
-            {
-              player_id: result.player_id,
-              player_name: result.player_name,
-              total_score: result.total_score.to_f,
-              total_duration: result.total_duration.to_f
-            }
-          end
+          order_clause = "#{sort_by} #{direction}"
 
-          summaries.sort_by! { |s| s[sort_by.to_sym] }
-          summaries.reverse! if direction == 'desc'
-
-          summaries
+          Playthrough.joins(:player)
+                     .where(started_at: week_start..week_end)
+                     .group('players.id', 'players.name')
+                     .select(
+                       'players.id as player_id',
+                       'players.name as player_name',
+                       'SUM(playthroughs.score) as total_score',
+                       'SUM(playthroughs.time_spent) as total_duration'
+                     )
+                     .order(Arel.sql(order_clause))
+                     .map do |result|
+                       {
+                         player_id: result.player_id,
+                         player_name: result.player_name,
+                         total_score: result.total_score.to_f,
+                         total_duration: result.total_duration.to_f
+                       }
+                     end
         end
 
         def summarize(start_date, end_date, summaries)
