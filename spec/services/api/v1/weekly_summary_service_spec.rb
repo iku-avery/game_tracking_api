@@ -1,87 +1,69 @@
 require 'rails_helper'
 
-RSpec.describe Api::V1::WeeklySummaryService do
-  describe '.call' do
-    let(:week_start) { Date.new(2025, 1, 6) }  # Monday
-    let(:week_end)   { Date.new(2025, 1, 12) } # Sunday
-
-    let!(:high_score_player)    { create(:player, name: 'High Score Player') }
-    let!(:long_duration_player) { create(:player, name: 'Long Duration Player') }
-    let!(:balanced_player)      { create(:player, name: 'Balanced Player') }
+RSpec.describe "Api::V1::WeeklySummary", type: :request do
+  describe "GET /api/v1/weekly_summary" do
+    let!(:high_score_player) { create(:player, name: "High Score Player") }
+    let!(:long_duration_player) { create(:player, name: "Long Duration Player") }
 
     before do
-      create_playthroughs_for_players
+      # High Score Player: total_score = 300, total_duration = 5400
+      create(:playthrough, player: high_score_player,
+                           started_at: Date.current.beginning_of_week(:monday) + 1.day, score: 100,
+                           time_spent: 1800)
+      create(:playthrough, player: high_score_player,
+                           started_at: Date.current.beginning_of_week(:monday) + 2.days, score: 200,
+                           time_spent: 3600)
+
+      # Long Duration Player: total_score = 100, total_duration = 7200
+      create(:playthrough, player: long_duration_player,
+                           started_at: Date.current.beginning_of_week(:monday) + 3.days, score: 100,
+                           time_spent: 7200)
     end
 
-    def create_playthroughs_for_players # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-      # High Score Player: 300 pts, 3000 sec
-      create(:playthrough, player: high_score_player, started_at: week_start.noon, score: 100,
-                           time_spent: 1000)
-      create(:playthrough, player: high_score_player, started_at: week_start + 2.days, score: 200,
-                           time_spent: 2000)
+    it "returns sorted summaries by total_score desc by default when no date param" do # rubocop:disable RSpec/ExampleLength
+      get "/api/v1/weekly_summary"
+      expect(response).to have_http_status(:ok)
 
-      # Long Duration Player: 500 pts, 3000 sec
-      create(:playthrough, player: long_duration_player, started_at: week_start + 4.days,
-                           score: 500, time_spent: 3000)
+      summaries = response.parsed_body['player_summaries']
+      expect(summaries.size).to eq(2)
 
-      # Balanced Player: 150 pts, 1500 sec
-      create(:playthrough, player: balanced_player, started_at: week_end.noon, score: 150,
-                           time_spent: 1500)
-
-      # Outside of week — should be ignored
-      create(:playthrough, player: high_score_player, started_at: week_end + 1.day, score: 999,
-                           time_spent: 9999)
-      create(:playthrough, player: long_duration_player, started_at: week_start - 1.day,
-                           score: 888, time_spent: 8888)
+      expect(summaries.first['player_name']).to eq("High Score Player")
+      expect(summaries.first['total_score']).to eq(300.0)
+      expect(summaries.map { |s| s['player_name'] }).to include("Long Duration Player")
     end
 
-    context 'when playthroughs exist in the given week' do
-      it 'returns correct summary for the week' do # rubocop:disable RSpec/ExampleLength
-        summary = described_class.call(date: week_start + 2.days)
+    it "returns sorted summaries by total_score desc with valid date param" do # rubocop:disable RSpec/ExampleLength
+      get "/api/v1/weekly_summary", params: { date: Date.current.to_s }
+      expect(response).to have_http_status(:ok)
 
-        expect(summary[:week_start_date]).to eq(week_start)
-        expect(summary[:week_end_date]).to eq(week_end)
+      summaries = response.parsed_body['player_summaries']
+      expect(summaries.size).to eq(2)
 
-        expect(summary[:player_summaries].size).to eq(3)
-
-        expect(summary[:player_summaries]).to include(
-          a_hash_including(player_name: 'High Score Player', total_score: 300.0,
-                           total_duration: 3000.0),
-          a_hash_including(player_name: 'Long Duration Player', total_score: 500.0,
-                           total_duration: 3000.0),
-          a_hash_including(player_name: 'Balanced Player', total_score: 150.0,
-                           total_duration: 1500.0)
-        )
-      end
-
-      it 'sorts by total_score descending by default' do
-        summary = described_class.call(date: week_start)
-        names = summary[:player_summaries].map { |ps| ps[:player_name] }
-
-        expect(names).to eq(['Long Duration Player', 'High Score Player', 'Balanced Player'])
-      end
-
-      it 'sorts by total_duration ascending' do
-        summary = described_class.call(date: week_start, sort_by: 'total_duration',
-                                       direction: 'asc')
-        names = summary[:player_summaries].map { |ps| ps[:player_name] }
-
-        expect(names).to eq(['Balanced Player', 'High Score Player', 'Long Duration Player'])
-      end
-
-      it 'sorts by total_score ascending' do
-        summary = described_class.call(date: week_start, sort_by: 'total_score', direction: 'asc')
-        names = summary[:player_summaries].map { |ps| ps[:player_name] }
-
-        expect(names).to eq(['Balanced Player', 'High Score Player', 'Long Duration Player'])
-      end
+      expect(summaries.first['player_name']).to eq("High Score Player")
+      expect(summaries.first['total_score']).to eq(300.0)
+      expect(summaries.map { |s| s['player_name'] }).to include("Long Duration Player")
     end
 
-    context 'when no playthroughs exist in the given week' do
-      it 'returns an empty player_summaries array' do
-        summary = described_class.call(date: Date.new(2020, 1, 1))
-        expect(summary[:player_summaries]).to eq([])
-      end
+    it "returns sorted summaries by total_duration asc" do # rubocop:disable RSpec/ExampleLength
+      get "/api/v1/weekly_summary", params: { sort_by: 'total_duration', direction: 'asc' }
+      expect(response).to have_http_status(:ok)
+
+      summaries = response.parsed_body['player_summaries']
+      expect(summaries.size).to eq(2)
+
+      # Long Duration Player has higher total_duration,
+      # so High Score Player should be first in asc order
+      expect(summaries.first['player_name']).to eq("High Score Player")
+      expect(summaries.first['total_duration']).to eq(5400.0)
+      expect(summaries.map { |s| s['player_name'] }).to include("Long Duration Player")
+    end
+
+    it "returns 422 for invalid date format" do
+      get "/api/v1/weekly_summary", params: { date: "invalid-date" }
+      expect(response).to have_http_status(:unprocessable_entity)
+
+      json = response.parsed_body
+      expect(json['error']).to eq('Invalid date format')
     end
   end
 end

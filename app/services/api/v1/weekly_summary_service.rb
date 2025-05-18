@@ -4,6 +4,8 @@ module Api
       ALLOWED_SORT_COLUMNS = %w[total_score total_duration].freeze
       ALLOWED_DIRECTIONS = %w[asc desc].freeze
 
+      class InvalidDateFormatError < StandardError; end
+
       def self.call(date: nil, sort_by: 'total_score', direction: 'desc')
         date = normalize_date(date)
         sort_by = 'total_score' unless ALLOWED_SORT_COLUMNS.include?(sort_by)
@@ -15,6 +17,8 @@ module Api
         week_end = week_start + 6.days
 
         summarize(week_start, week_end, player_summaries)
+      rescue ArgumentError
+        raise InvalidDateFormatError, 'Invalid date format'
       end
 
       class << self
@@ -22,14 +26,17 @@ module Api
 
         def normalize_date(date)
           date ||= Date.current
-          date.is_a?(Date) ? date : Date.parse(date.to_s)
+          return date if date.is_a?(Date)
+
+          Date.parse(date.to_s)
         end
 
         def fetch_and_aggregate_playthroughs(date, sort_by, direction) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-          week_start = date.beginning_of_week(:monday).beginning_of_day
-          week_end = (week_start.to_date + 6.days).end_of_day
+          week_start = date.beginning_of_week(:monday).beginning_of_day.utc
+          week_end = (week_start.to_date + 6.days).end_of_day.utc
 
-          order_clause = "#{sort_by} #{direction}"
+          # Stable order: primary sort + player_name ASC as secondary
+          order_clause = "#{sort_by} #{direction}, players.name ASC"
 
           Playthrough.joins(:player)
                      .where(started_at: week_start..week_end)
